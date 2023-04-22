@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { switchMap } from 'rxjs';
+
 import { CountriesService } from '../../services/countries.service';
 
 @Component({
@@ -12,16 +15,21 @@ export class CountryPageComponent implements OnInit {
 
   constructor(
     private activatedRoute: ActivatedRoute,
-    private countriesService: CountriesService
+    private router: Router,
+    private countriesService: CountriesService,
   ) {}
 
   ngOnInit(): void {
     this.activatedRoute.params
-      .subscribe(({id}) => {
-        this.countriesService.searchCountryByAlphaCode(id)
-          .subscribe(resp => {
-            console.log({resp});
-          })
+      .pipe(
+        switchMap(({id}) => this.countriesService.searchCountryByAlphaCode(id))
+      )
+      .subscribe(country => {
+        if(!country) {
+          return this.router.navigateByUrl('');
+        }
+        console.log({country});
+        return;
       })
   }
 
